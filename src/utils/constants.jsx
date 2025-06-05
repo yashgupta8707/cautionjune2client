@@ -32,13 +32,13 @@ export const API_ENDPOINTS = {
 };
 
 export const PARTY_SOURCES = [
-  { value: 'instagram', label: 'Instagram', icon: '📷' },
-  { value: 'linkedin', label: 'LinkedIn', icon: '💼' },
-  { value: 'whatsapp', label: 'WhatsApp', icon: '📱' },
+  { value: 'Instagram', label: 'Instagram', icon: '📷' },
+  { value: 'Linkedin', label: 'LinkedIn', icon: '💼' },
+  { value: 'Whatsapp', label: 'WhatsApp', icon: '📱' },
   { value: 'walk-in', label: 'Walk-in', icon: '🚶' },
-  { value: 'referral', label: 'Referral', icon: '👥' },
-  { value: 'website', label: 'Website', icon: '🌐' },
-  { value: 'other', label: 'Other', icon: '📌' }
+  { value: 'Referral', label: 'Referral', icon: '👥' },
+  { value: 'Website', label: 'Website', icon: '🌐' },
+  { value: 'Other', label: 'Other', icon: '📌' }
 ];
 
 export const PRIORITY_LEVELS = [

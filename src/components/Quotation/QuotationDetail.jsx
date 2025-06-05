@@ -329,7 +329,7 @@ const QuotationDetail = () => {
       )}
 
       {/* Debug Information (Development Only) */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* {process.env.NODE_ENV === 'development' && (
         <Card className="mb-4 border-info">
           <Card.Header>
             <h6 className="text-info">Debug Information (Development Only)</h6>
@@ -340,7 +340,7 @@ const QuotationDetail = () => {
             </pre>
           </Card.Body>
         </Card>
-      )}
+      )} */}
     </Container>
   );
 };

@@ -1,4 +1,4 @@
-// client/src/components/Navigation.js - Updated with ProfileDropdown
+// client/src/components/Navigation.js - Updated with Daily Report
 import React, { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import ProfileDropdown from "./Profile/ProfileDropdown";
@@ -28,7 +28,7 @@ const Navigation = () => {
             z-index: 1030;
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            padding: 0;
             backdrop-filter: blur(10px);
           }
           
@@ -44,7 +44,7 @@ const Navigation = () => {
           .navbar-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             color: #2c3e50 !important;
             text-decoration: none;
             font-size: 1.4rem;
@@ -358,6 +358,20 @@ const Navigation = () => {
               </NavLink>
             </li>
 
+            {/* NEW: Daily Report Navigation Item */}
+            <li>
+              <NavLink
+                to="/daily-report"
+                className={`nav-link ${
+                  location.pathname.includes("/daily-report") ? "active" : ""
+                }`}
+              >
+                <i className="fas fa-calendar-day"></i>
+                Daily Report
+                <span className="navbar-badge">NEW</span>
+              </NavLink>
+            </li>
+
             <li>
               <NavLink
                 to="/reports"
@@ -370,7 +384,7 @@ const Navigation = () => {
               </NavLink>
             </li>
 
-            {/* Profile Dropdown - Replaces the old profile link */}
+            {/* Profile Dropdown */}
             <li className="navbar-profile">
               <ProfileDropdown />
             </li>

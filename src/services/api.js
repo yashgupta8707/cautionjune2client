@@ -1,9 +1,9 @@
-// client/src/services/api.js - Updated for new backend
+// client/src/services/api.js - Updated with Daily Report service
 import axios from 'axios';
 
 // Updated to match backend port
-// const API_BASE_URL = 'http://localhost:10000/api';
-const API_BASE_URL = 'https://cautionjune2server.onrender.com/api';
+const API_BASE_URL = 'http://localhost:10000/api';
+// const API_BASE_URL = 'https://cautionjune2server.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -136,6 +136,13 @@ export const dashboardService = {
   getRecentActivity: () => api.get('/dashboard/recent-activity')
 };
 
+// NEW: Daily Report API methods
+export const dailyReportService = {
+  getDailyReport: (date) => api.get(`/daily-report/${date}`),
+  getDailySummary: () => api.get('/daily-report/summary'),
+  getWeeklyComparison: (date) => api.get(`/daily-report/weekly/${date}`)
+};
+
 // Health check
 export const healthCheck = () => api.get('/health');
 
@@ -149,5 +156,6 @@ export default {
   categoryService,
   authService,
   dashboardService,
+  dailyReportService,
   healthCheck
 };

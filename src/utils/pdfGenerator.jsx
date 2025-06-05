@@ -1,4 +1,4 @@
-// client/src/utils/pdfGenerator.js
+// client/src/utils/pdfGenerator.js - FIXED VERSION
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -90,12 +90,58 @@ const convertNumberToWords = (amount) => {
   }
 };
 
+// FIXED: Helper function to safely get category name
+const getCategoryName = (component) => {
+  if (typeof component.category === 'string') {
+    return component.category;
+  }
+  if (typeof component.category === 'object' && component.category?.name) {
+    return component.category.name;
+  }
+  if (component.CATEGORY) {
+    return component.CATEGORY;
+  }
+  return 'Unknown Category';
+};
+
+// FIXED: Helper function to safely get brand name
+const getBrandName = (component) => {
+  if (typeof component.brand === 'string') {
+    return component.brand;
+  }
+  if (typeof component.brand === 'object' && component.brand?.name) {
+    return component.brand.name;
+  }
+  if (component.BRAND) {
+    return component.BRAND;
+  }
+  return 'Unknown Brand';
+};
+
+// FIXED: Helper function to safely get component name
+const getComponentName = (component) => {
+  // Try multiple possible name fields
+  if (component.model?.name) {
+    return component.model.name;
+  }
+  if (component.name) {
+    return component.name;
+  }
+  if (component.NAME) {
+    return component.NAME;
+  }
+  if (typeof component.model === 'string') {
+    return component.model;
+  }
+  return 'Unknown Component';
+};
+
 // Smart watermark selection based on quotation components
 const getSmartWatermark = (quotation) => {
   const componentTypes = quotation.components.map((comp) => ({
-    category: comp.category?.name?.toLowerCase() || "",
-    brand: comp.brand?.name?.toLowerCase() || "",
-    name: comp.model?.name?.toLowerCase() || comp.name?.toLowerCase() || "",
+    category: getCategoryName(comp).toLowerCase(),
+    brand: getBrandName(comp).toLowerCase(),
+    name: getComponentName(comp).toLowerCase(),
   }));
 
   // Gaming/Graphics focused build
@@ -245,9 +291,11 @@ const generateWatermarkSVG = (type) => {
   return svgComponents[type] || svgComponents.motherboard;
 };
 
-// Create HTML template with smart watermarks (WITHOUT PRICE)
+// FIXED: Create HTML template with smart watermarks (WITHOUT PRICE)
 const createEstimateHTML = (quotation) => {
-  // Format quotation data
+  console.log('🐛 Creating estimate HTML, quotation data:', quotation);
+  
+  // Format quotation data with FIXED component handling
   const estimateData = {
     estimateNo: quotation.title || "EPC/E/2526/00210",
     date: quotation.createdAt
@@ -259,19 +307,22 @@ const createEstimateHTML = (quotation) => {
         new Date().toLocaleTimeString("en-IN"),
     placeOfSupply: "09-Uttar Pradesh",
     customer: {
-      name: quotation.party.name || "Customer Name",
-      address: quotation.party.address || "Customer Address",
-      contact: quotation.party.phone || "0000000000",
+      name: quotation.party?.name || "Customer Name",
+      address: quotation.party?.address || "Customer Address",
+      contact: quotation.party?.phone || "0000000000",
       state: "09-Uttar Pradesh",
     },
-    items: quotation.components.map((comp, index) => ({
-      serial: index + 1,
-      category: comp.category?.name || "Category",
-      brand: comp.brand?.name || "Brand",
-      name: comp.model?.name || comp.name || "Component",
-      warranty: comp.warranty || "1 Year",
-      quantity: comp.quantity || 1,
-    })),
+    items: quotation.components.map((comp, index) => {
+      console.log('🐛 Processing component:', comp);
+      return {
+        serial: index + 1,
+        category: getCategoryName(comp),
+        brand: getBrandName(comp),
+        name: getComponentName(comp),
+        warranty: comp.warranty || comp.WARRANTY || "1 Year",
+        quantity: comp.quantity || 1,
+      };
+    }),
     totals: {
       quantity: quotation.components
         .reduce((sum, comp) => sum + (comp.quantity || 1), 0)
@@ -281,6 +332,8 @@ const createEstimateHTML = (quotation) => {
       finalTotal: `₹ ${quotation.totalAmount?.toLocaleString("en-IN") || "0"}`,
     },
   };
+
+  console.log('🐛 Processed estimate data:', estimateData);
 
   // Get smart watermark for this quotation
   const watermarkConfig = getSmartWatermark(quotation);
@@ -308,10 +361,10 @@ const createEstimateHTML = (quotation) => {
           width: 210mm !important;
           height: 297mm !important;
           margin: 0 !important;
-          padding: 8mm 6mm !important;
+          padding: 6mm 4mm !important;
           font-family: Arial, sans-serif !important;
-          font-size: 10px !important;
-          line-height: 1.2 !important;
+          font-size: 12px !important;
+          line-height: 1.3 !important;
           color: #000 !important;
           background: white !important;
           -webkit-print-color-adjust: exact !important;
@@ -321,7 +374,7 @@ const createEstimateHTML = (quotation) => {
         .estimate-container {
           width: 100% !important;
           height: 100% !important;
-          padding: 3mm !important;
+          padding: 2mm !important;
           position: relative !important;
         }
 
@@ -333,7 +386,7 @@ const createEstimateHTML = (quotation) => {
           transform: translate(-25%, -25%) rotate(0deg) !important;
           width: 170mm !important;
           height: 170mm !important;
-          opacity: 0.1 !important;
+          opacity: 0.08 !important;
           z-index: 1 !important;
           pointer-events: none !important;
         }
@@ -348,7 +401,7 @@ const createEstimateHTML = (quotation) => {
         /* Component watermarks */
         .watermark {
           position: absolute !important;
-          opacity: 0.06 !important;
+          opacity: 0.05 !important;
           z-index: 1 !important;
           pointer-events: none !important;
           color: ${watermarkConfig.color} !important;
@@ -368,7 +421,7 @@ const createEstimateHTML = (quotation) => {
           transform: translate(-50%, -50%) rotate(25deg) !important;
           width: 60mm !important;
           height: 60mm !important;
-          opacity: 0.06 !important;
+          opacity: 0.05 !important;
         }
 
         .watermark-3 {
@@ -377,7 +430,7 @@ const createEstimateHTML = (quotation) => {
           transform: translate(-50%, -50%) rotate(-65deg) !important;
           width: 50mm !important;
           height: 50mm !important;
-          opacity: 0.06 !important;
+          opacity: 0.05 !important;
         }
 
         .watermark svg {
@@ -392,19 +445,19 @@ const createEstimateHTML = (quotation) => {
           height: 100% !important;
         }
 
-        /* Title */
+        /* Title - Compact but visible */
         .estimate-title {
           text-align: center !important;
-          font-size: 18px !important;
+          font-size: 20px !important;
           font-weight: bold !important;
-          margin-bottom: 4mm !important;
+          margin-bottom: 3mm !important;
           text-decoration: underline !important;
         }
 
         /* Header section */
         .header-section {
           border: 2px solid #000 !important;
-          margin-bottom: 3mm !important;
+          margin-bottom: 2mm !important;
           display: table !important;
           width: 100% !important;
         }
@@ -416,7 +469,7 @@ const createEstimateHTML = (quotation) => {
         .company-cell {
           display: table-cell !important;
           width: 60% !important;
-          padding: 3mm !important;
+          padding: 2mm !important;
           vertical-align: top !important;
           border-right: 1px solid #000 !important;
         }
@@ -424,14 +477,14 @@ const createEstimateHTML = (quotation) => {
         .estimate-cell {
           display: table-cell !important;
           width: 40% !important;
-          padding: 3mm !important;
+          padding: 2mm !important;
           vertical-align: top !important;
         }
 
         .company-info {
           display: flex !important;
           align-items: flex-start !important;
-          gap: 3mm !important;
+          gap: 2mm !important;
         }
 
         .company-logo {
@@ -443,15 +496,15 @@ const createEstimateHTML = (quotation) => {
         }
 
         .company-details h3 {
-          font-size: 14px !important;
+          font-size: 15px !important;
           font-weight: bold !important;
           margin-bottom: 1mm !important;
         }
 
         .company-details p {
-          font-size: 9px !important;
+          font-size: 11px !important;
           margin-bottom: 0.5mm !important;
-          line-height: 1.2 !important;
+          line-height: 1.3 !important;
         }
 
         .estimate-info table {
@@ -462,7 +515,7 @@ const createEstimateHTML = (quotation) => {
         .estimate-info td {
           border: 1px solid #000 !important;
           padding: 2mm !important;
-          font-size: 9px !important;
+          font-size: 11px !important;
           vertical-align: middle !important;
         }
 
@@ -477,29 +530,29 @@ const createEstimateHTML = (quotation) => {
         /* Customer section */
         .customer-section {
           border: 1px solid #000 !important;
-          padding: 3mm !important;
-          margin-bottom: 3mm !important;
-        }
-
-        .customer-section h4 {
-          font-size: 10px !important;
-          font-weight: bold !important;
-          text-decoration: underline !important;
+          padding: 2mm !important;
           margin-bottom: 2mm !important;
         }
 
-        .customer-section p {
-          font-size: 9px !important;
+        .customer-section h4 {
+          font-size: 12px !important;
+          font-weight: bold !important;
+          text-decoration: underline !important;
           margin-bottom: 1mm !important;
-          line-height: 1.2 !important;
         }
 
-        /* Items table */
+        .customer-section p {
+          font-size: 11px !important;
+          margin-bottom: 0.5mm !important;
+          line-height: 1.3 !important;
+        }
+
+        /* Items table - COMPACT BUT READABLE */
         .items-table {
           width: 100% !important;
           border: 2px solid #000 !important;
           border-collapse: collapse !important;
-          margin-bottom: 3mm !important;
+          margin-bottom: 2mm !important;
         }
 
         .items-table th {
@@ -508,7 +561,8 @@ const createEstimateHTML = (quotation) => {
           padding: 2mm !important;
           text-align: center !important;
           font-weight: bold !important;
-          font-size: 9px !important;
+          font-size: 11px !important;
+          line-height: 1.2 !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
@@ -516,9 +570,10 @@ const createEstimateHTML = (quotation) => {
         .items-table td {
           border: 1px solid #000 !important;
           padding: 2mm !important;
-          font-size: 8px !important;
+          font-size: 10px !important;
           text-align: center !important;
           vertical-align: middle !important;
+          line-height: 1.2 !important;
         }
 
         .items-table .text-left {
@@ -532,10 +587,10 @@ const createEstimateHTML = (quotation) => {
           print-color-adjust: exact !important;
         }
 
-        /* Combined total amount section */
+        /* Combined total amount section - Compact */
         .total-amount-section {
           border: 2px solid #000 !important;
-          margin-bottom: 3mm !important;
+          margin-bottom: 2mm !important;
           display: table !important;
           width: 100% !important;
           background-color: #f9f9f9 !important;
@@ -549,28 +604,28 @@ const createEstimateHTML = (quotation) => {
 
         .amount-words-cell {
           display: table-cell !important;
-          width: 70% !important;
-          padding: 4mm !important;
+          width: 65% !important;
+          padding: 3mm !important;
           vertical-align: middle !important;
           border-right: 1px solid #000 !important;
         }
 
         .total-amount-cell {
           display: table-cell !important;
-          width: 30% !important;
-          padding: 4mm !important;
+          width: 35% !important;
+          padding: 3mm !important;
           vertical-align: middle !important;
           text-align: center !important;
         }
 
         .amount-words-label {
-          font-size: 10px !important;
+          font-size: 11px !important;
           font-weight: bold !important;
-          margin-bottom: 2mm !important;
+          margin-bottom: 1mm !important;
         }
 
         .amount-words-text {
-          font-size: 9px !important;
+          font-size: 10px !important;
           font-weight: bold !important;
           line-height: 1.3 !important;
         }
@@ -579,6 +634,7 @@ const createEstimateHTML = (quotation) => {
           font-size: 16px !important;
           font-weight: bold !important;
           margin: 0 !important;
+          color: #000 !important;
         }
 
         /* Bottom section - three columns */
@@ -592,7 +648,7 @@ const createEstimateHTML = (quotation) => {
           display: table-cell !important;
           vertical-align: top !important;
           border: 1px solid #000 !important;
-          padding: 3mm !important;
+          padding: 2mm !important;
           position: relative !important;
         }
 
@@ -610,36 +666,36 @@ const createEstimateHTML = (quotation) => {
         }
 
         .bottom-section h5 {
-          font-size: 10px !important;
+          font-size: 11px !important;
           font-weight: bold !important;
           text-decoration: underline !important;
-          margin-bottom: 2mm !important;
+          margin-bottom: 1mm !important;
         }
 
         .bottom-section p {
-          font-size: 8px !important;
-          margin-bottom: 1mm !important;
-          line-height: 1.2 !important;
+          font-size: 9px !important;
+          margin-bottom: 0.5mm !important;
+          line-height: 1.3 !important;
         }
 
         /* QR code in bank details */
         .qr-code {
           position: absolute !important;
-          bottom: 6mm !important;
-          right: 6mm !important;
+          bottom: 9mm !important;
+          right: 2mm !important;
           text-align: center !important;
         }
 
         .qr-code img {
-          width: 15mm !important;
-          height: 15mm !important;
+          width: 16mm !important;
+          height: 16mm !important;
           margin-bottom: 1mm !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
         .qr-code p {
-          font-size: 6px !important;
+          font-size: 7px !important;
           margin: 0 !important;
           font-weight: bold !important;
         }
@@ -651,29 +707,29 @@ const createEstimateHTML = (quotation) => {
           align-items: center !important;
           justify-content: center !important;
           height: 100% !important;
-          gap: 2mm !important;
+          gap: 1mm !important;
         }
 
         .company-logo-sig {
           display: flex !important;
           align-items: center !important;
-          gap: 2mm !important;
+          gap: 1mm !important;
         }
 
         .company-logo-sig img {
-          width: 8mm !important;
-          height: 6mm !important;
+          width: 15mm !important;
+          height: 15mm !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
         .company-name {
-          font-size: 11px !important;
+          font-size: 10px !important;
           font-weight: bold !important;
         }
 
         .signature-line {
-          font-size: 8px !important;
+          font-size: 9px !important;
           font-weight: bold !important;
         }
       </style>
@@ -827,7 +883,7 @@ const createEstimateHTML = (quotation) => {
             <!-- Authorized Signatory -->
             <div class="bottom-column signature-column">
               <div class="signature-content">
-                <p style="font-size: 9px; font-weight: bold; margin-bottom: 2mm;">For: Empress PC</p>
+                <p style="font-size: 10px; font-weight: bold; margin-bottom: 1mm;">For: Empress PC</p>
                 
                 <div class="company-logo-sig">
                   <img src="/logo.png" alt="Empress PC" />
@@ -845,9 +901,11 @@ const createEstimateHTML = (quotation) => {
   `;
 };
 
-// Create HTML template WITH PRICE (NEW FUNCTION)
+// FIXED: Create HTML template WITH PRICE (NEW FUNCTION)
 const createEstimateWithPriceHTML = (quotation) => {
-  // Format quotation data with prices
+  console.log('🐛 Creating estimate with price HTML, quotation data:', quotation);
+  
+  // Format quotation data with prices and FIXED component handling
   const estimateData = {
     estimateNo: quotation.title || "EPC/E/2526/00210",
     date: quotation.createdAt
@@ -859,21 +917,24 @@ const createEstimateWithPriceHTML = (quotation) => {
         new Date().toLocaleTimeString("en-IN"),
     placeOfSupply: "09-Uttar Pradesh",
     customer: {
-      name: quotation.party.name || "Customer Name",
-      address: quotation.party.address || "Customer Address",
-      contact: quotation.party.phone || "0000000000",
+      name: quotation.party?.name || "Customer Name",
+      address: quotation.party?.address || "Customer Address",
+      contact: quotation.party?.phone || "0000000000",
       state: "09-Uttar Pradesh",
     },
-    items: quotation.components.map((comp, index) => ({
-      serial: index + 1,
-      brand: comp.brand?.name || "Brand",
-      category: comp.category?.name || "Category",
-      name: comp.model?.name || comp.name || "Component",
-      warranty: comp.warranty || "1 Year",
-      quantity: comp.quantity || 1,
-      price: comp.salesPrice || 0,
-      totalPrice: (comp.salesPrice || 0) * (comp.quantity || 1),
-    })),
+    items: quotation.components.map((comp, index) => {
+      console.log('🐛 Processing component with price:', comp);
+      return {
+        serial: index + 1,
+        brand: getBrandName(comp),
+        category: getCategoryName(comp),
+        name: getComponentName(comp),
+        warranty: comp.warranty || comp.WARRANTY || "1 Year",
+        quantity: comp.quantity || 1,
+        price: comp.salesPrice || comp.SALE || 0,
+        totalPrice: (comp.salesPrice || comp.SALE || 0) * (comp.quantity || 1),
+      };
+    }),
     totals: {
       quantity: quotation.components
         .reduce((sum, comp) => sum + (comp.quantity || 1), 0)
@@ -883,6 +944,8 @@ const createEstimateWithPriceHTML = (quotation) => {
       finalTotal: `₹ ${quotation.totalAmount?.toLocaleString("en-IN") || "0"}`,
     },
   };
+
+  console.log('🐛 Processed estimate data with prices:', estimateData);
 
   // Get smart watermark for this quotation
   const watermarkConfig = getSmartWatermark(quotation);
@@ -910,10 +973,10 @@ const createEstimateWithPriceHTML = (quotation) => {
           width: 210mm !important;
           height: 297mm !important;
           margin: 0 !important;
-          padding: 8mm 6mm !important;
+          padding: 6mm 4mm !important;
           font-family: Arial, sans-serif !important;
-          font-size: 10px !important;
-          line-height: 1.2 !important;
+          font-size: 12px !important;
+          line-height: 1.3 !important;
           color: #000 !important;
           background: white !important;
           -webkit-print-color-adjust: exact !important;
@@ -923,7 +986,7 @@ const createEstimateWithPriceHTML = (quotation) => {
         .estimate-container {
           width: 100% !important;
           height: 100% !important;
-          padding: 3mm !important;
+          padding: 2mm !important;
           position: relative !important;
         }
 
@@ -935,7 +998,7 @@ const createEstimateWithPriceHTML = (quotation) => {
           transform: translate(-25%, -25%) rotate(0deg) !important;
           width: 170mm !important;
           height: 170mm !important;
-          opacity: 0.1 !important;
+          opacity: 0.08 !important;
           z-index: 1 !important;
           pointer-events: none !important;
         }
@@ -950,7 +1013,7 @@ const createEstimateWithPriceHTML = (quotation) => {
         /* Component watermarks */
         .watermark {
           position: absolute !important;
-          opacity: 0.06 !important;
+          opacity: 0.05 !important;
           z-index: 1 !important;
           pointer-events: none !important;
           color: ${watermarkConfig.color} !important;
@@ -970,7 +1033,7 @@ const createEstimateWithPriceHTML = (quotation) => {
           transform: translate(-50%, -50%) rotate(25deg) !important;
           width: 60mm !important;
           height: 60mm !important;
-          opacity: 0.06 !important;
+          opacity: 0.05 !important;
         }
 
         .watermark-3 {
@@ -979,7 +1042,7 @@ const createEstimateWithPriceHTML = (quotation) => {
           transform: translate(-50%, -50%) rotate(-65deg) !important;
           width: 50mm !important;
           height: 50mm !important;
-          opacity: 0.06 !important;
+          opacity: 0.05 !important;
         }
 
         .watermark svg {
@@ -994,19 +1057,19 @@ const createEstimateWithPriceHTML = (quotation) => {
           height: 100% !important;
         }
 
-        /* Title */
+        /* Title - Enhanced */
         .estimate-title {
           text-align: center !important;
-          font-size: 18px !important;
+          font-size: 24px !important;
           font-weight: bold !important;
-          margin-bottom: 4mm !important;
+          margin-bottom: 5mm !important;
           text-decoration: underline !important;
         }
 
         /* Header section */
         .header-section {
           border: 2px solid #000 !important;
-          margin-bottom: 3mm !important;
+          margin-bottom: 4mm !important;
           display: table !important;
           width: 100% !important;
         }
@@ -1018,7 +1081,7 @@ const createEstimateWithPriceHTML = (quotation) => {
         .company-cell {
           display: table-cell !important;
           width: 60% !important;
-          padding: 3mm !important;
+          padding: 4mm !important;
           vertical-align: top !important;
           border-right: 1px solid #000 !important;
         }
@@ -1026,34 +1089,34 @@ const createEstimateWithPriceHTML = (quotation) => {
         .estimate-cell {
           display: table-cell !important;
           width: 40% !important;
-          padding: 3mm !important;
+          padding: 4mm !important;
           vertical-align: top !important;
         }
 
         .company-info {
           display: flex !important;
           align-items: flex-start !important;
-          gap: 3mm !important;
+          gap: 4mm !important;
         }
 
         .company-logo {
-          width: 12mm !important;
-          height: 12mm !important;
+          width: 16mm !important;
+          height: 16mm !important;
           flex-shrink: 0 !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
         .company-details h3 {
-          font-size: 14px !important;
+          font-size: 18px !important;
           font-weight: bold !important;
-          margin-bottom: 1mm !important;
+          margin-bottom: 2mm !important;
         }
 
         .company-details p {
-          font-size: 11px !important;
-          margin-bottom: 0.5mm !important;
-          line-height: 1.2 !important;
+          font-size: 14px !important;
+          margin-bottom: 1mm !important;
+          line-height: 1.4 !important;
         }
 
         .estimate-info table {
@@ -1063,8 +1126,8 @@ const createEstimateWithPriceHTML = (quotation) => {
 
         .estimate-info td {
           border: 1px solid #000 !important;
-          padding: 2mm !important;
-          font-size: 11px !important;
+          padding: 3mm !important;
+          font-size: 14px !important;
           vertical-align: middle !important;
         }
 
@@ -1079,48 +1142,50 @@ const createEstimateWithPriceHTML = (quotation) => {
         /* Customer section */
         .customer-section {
           border: 1px solid #000 !important;
-          padding: 3mm !important;
-          margin-bottom: 3mm !important;
+          padding: 4mm !important;
+          margin-bottom: 4mm !important;
         }
 
         .customer-section h4 {
-          font-size: 12px !important;
+          font-size: 15px !important;
           font-weight: bold !important;
           text-decoration: underline !important;
-          margin-bottom: 2mm !important;
+          margin-bottom: 3mm !important;
         }
 
         .customer-section p {
-          font-size: 11px !important;
-          margin-bottom: 1mm !important;
-          line-height: 1.2 !important;
+          font-size: 14px !important;
+          margin-bottom: 1.5mm !important;
+          line-height: 1.4 !important;
         }
 
-        /* Items table WITH PRICE */
+        /* Items table WITH PRICE - Enhanced */
         .items-table {
           width: 100% !important;
           border: 2px solid #000 !important;
           border-collapse: collapse !important;
-          margin-bottom: 3mm !important;
+          margin-bottom: 4mm !important;
         }
 
         .items-table th {
           background-color: #f0f0f0 !important;
           border: 1px solid #000 !important;
-          padding: 2mm !important;
+          padding: 4mm !important;
           text-align: center !important;
           font-weight: bold !important;
-          font-size: 9px !important;
+          font-size: 13px !important;
+          line-height: 1.4 !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
         .items-table td {
           border: 1px solid #000 !important;
-          padding: 2mm !important;
-          font-size: 8px !important;
+          padding: 4mm !important;
+          font-size: 12px !important;
           text-align: center !important;
           vertical-align: middle !important;
+          line-height: 1.4 !important;
         }
 
         .items-table .text-left {
@@ -1138,10 +1203,10 @@ const createEstimateWithPriceHTML = (quotation) => {
           print-color-adjust: exact !important;
         }
 
-        /* Combined total amount section */
+        /* Combined total amount section - Enhanced */
         .total-amount-section {
           border: 2px solid #000 !important;
-          margin-bottom: 3mm !important;
+          margin-bottom: 4mm !important;
           display: table !important;
           width: 100% !important;
           background-color: #f9f9f9 !important;
@@ -1155,36 +1220,37 @@ const createEstimateWithPriceHTML = (quotation) => {
 
         .amount-words-cell {
           display: table-cell !important;
-          width: 70% !important;
-          padding: 4mm !important;
+          width: 65% !important;
+          padding: 5mm !important;
           vertical-align: middle !important;
           border-right: 1px solid #000 !important;
         }
 
         .total-amount-cell {
           display: table-cell !important;
-          width: 30% !important;
-          padding: 4mm !important;
+          width: 35% !important;
+          padding: 5mm !important;
           vertical-align: middle !important;
           text-align: center !important;
         }
 
         .amount-words-label {
-          font-size: 10px !important;
+          font-size: 14px !important;
           font-weight: bold !important;
-          margin-bottom: 2mm !important;
+          margin-bottom: 3mm !important;
         }
 
         .amount-words-text {
-          font-size: 9px !important;
+          font-size: 13px !important;
           font-weight: bold !important;
-          line-height: 1.3 !important;
+          line-height: 1.5 !important;
         }
 
         .total-amount-value {
-          font-size: 16px !important;
+          font-size: 20px !important;
           font-weight: bold !important;
           margin: 0 !important;
+          color: #000 !important;
         }
 
         /* Bottom section - three columns */
@@ -1198,7 +1264,7 @@ const createEstimateWithPriceHTML = (quotation) => {
           display: table-cell !important;
           vertical-align: top !important;
           border: 1px solid #000 !important;
-          padding: 3mm !important;
+          padding: 4mm !important;
           position: relative !important;
         }
 
@@ -1216,36 +1282,36 @@ const createEstimateWithPriceHTML = (quotation) => {
         }
 
         .bottom-section h5 {
-          font-size: 10px !important;
+          font-size: 13px !important;
           font-weight: bold !important;
           text-decoration: underline !important;
-          margin-bottom: 2mm !important;
+          margin-bottom: 3mm !important;
         }
 
         .bottom-section p {
-          font-size: 8px !important;
-          margin-bottom: 1mm !important;
-          line-height: 1.2 !important;
+          font-size: 11px !important;
+          margin-bottom: 1.5mm !important;
+          line-height: 1.4 !important;
         }
 
         /* QR code in bank details */
         .qr-code {
           position: absolute !important;
           bottom: 6mm !important;
-          right: 5mm !important;
+          right: 8mm !important;
           text-align: center !important;
         }
 
         .qr-code img {
-          width: 14mm !important;
-          height: 14mm !important;
-          margin-bottom: 1mm !important;
+          width: 17mm !important;
+          height: 17mm !important;
+          margin-bottom: 2mm !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
         .qr-code p {
-          font-size: 6px !important;
+          font-size: 9px !important;
           margin: 0 !important;
           font-weight: bold !important;
         }
@@ -1263,23 +1329,23 @@ const createEstimateWithPriceHTML = (quotation) => {
         .company-logo-sig {
           display: flex !important;
           align-items: center !important;
-          gap: 2mm !important;
+          gap: 1mm !important;
         }
 
         .company-logo-sig img {
-          width: 8mm !important;
-          height: 6mm !important;
+          width: 25mm !important;
+          height: 25mm !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
 
         .company-name {
-          font-size: 11px !important;
+          font-size: 13px !important;
           font-weight: bold !important;
         }
 
         .signature-line {
-          font-size: 8px !important;
+          font-size: 11px !important;
           font-weight: bold !important;
         }
       </style>
@@ -1436,7 +1502,7 @@ const createEstimateWithPriceHTML = (quotation) => {
             <!-- Authorized Signatory -->
             <div class="bottom-column signature-column">
               <div class="signature-content">
-                <p style="font-size: 9px; font-weight: bold; margin-bottom: 2mm;">For: Empress PC</p>
+                <p style="font-size: 12px; font-weight: bold; margin-bottom: 3mm;">For: Empress PC</p>
                 
                 <div class="company-logo-sig">
                   <img src="/logo.png" alt="Empress PC" />
@@ -1454,7 +1520,7 @@ const createEstimateWithPriceHTML = (quotation) => {
   `;
 };
 
-// Updated PDF generation function (WITHOUT PRICE)
+// Updated PDF generation function (WITHOUT PRICE) - IMPROVED
 export const generateQuotationPDF = (quotation) => {
   return new Promise((resolve, reject) => {
     try {
@@ -1462,6 +1528,8 @@ export const generateQuotationPDF = (quotation) => {
       if (!quotation || !quotation.party || !quotation.components) {
         throw new Error("Invalid quotation data");
       }
+
+      console.log('🐛 Generating PDF for quotation:', quotation);
 
       // Create HTML content with smart watermarks (WITHOUT PRICE)
       const htmlContent = createEstimateHTML(quotation);
@@ -1486,7 +1554,7 @@ export const generateQuotationPDF = (quotation) => {
         logging: false,
         proxy: null,
         removeContainer: true,
-        scale: 2, // Higher scale for better quality
+        scale: 2.5, // Higher scale for better quality
         useCORS: true,
         width: 794, // A4 width in pixels at 96 DPI
         height: 1123, // A4 height in pixels at 96 DPI
@@ -1514,7 +1582,7 @@ export const generateQuotationPDF = (quotation) => {
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
           // Add image to PDF
-          const imgData = canvas.toDataURL("image/jpeg", 1.0);
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
           pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
 
           resolve(pdf);
@@ -1534,7 +1602,7 @@ export const generateQuotationPDF = (quotation) => {
   });
 };
 
-// NEW PDF generation function (WITH PRICE)
+// NEW PDF generation function (WITH PRICE) - IMPROVED
 export const generateQuotationWithPricePDF = (quotation) => {
   return new Promise((resolve, reject) => {
     try {
@@ -1542,6 +1610,8 @@ export const generateQuotationWithPricePDF = (quotation) => {
       if (!quotation || !quotation.party || !quotation.components) {
         throw new Error("Invalid quotation data");
       }
+
+      console.log('🐛 Generating PDF with price for quotation:', quotation);
 
       // Create HTML content with smart watermarks (WITH PRICE)
       const htmlContent = createEstimateWithPriceHTML(quotation);
@@ -1566,7 +1636,7 @@ export const generateQuotationWithPricePDF = (quotation) => {
         logging: false,
         proxy: null,
         removeContainer: true,
-        scale: 2, // Higher scale for better quality
+        scale: 2.5, // Higher scale for better quality
         useCORS: true,
         width: 794, // A4 width in pixels at 96 DPI
         height: 1123, // A4 height in pixels at 96 DPI
@@ -1594,7 +1664,7 @@ export const generateQuotationWithPricePDF = (quotation) => {
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
           // Add image to PDF
-          const imgData = canvas.toDataURL("image/jpeg", 1.0);
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
           pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
 
           resolve(pdf);

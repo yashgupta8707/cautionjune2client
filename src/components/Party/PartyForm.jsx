@@ -50,7 +50,7 @@ const PartyForm = () => {
             phone: party.phone || '',
             address: party.address || '',
             email: party.email || '',
-            source: party.source || 'walk-in',
+            source: party.source || 'Walk-in',
             priority: party.priority || 'medium',
             requirements: party.requirements || '',
             dealStatus: party.dealStatus || 'in_progress',
@@ -130,7 +130,7 @@ const PartyForm = () => {
           phone: formData.phone?.trim(),
           address: formData.address?.trim(),
           email: formData.email?.trim() || undefined,
-          source: formData.source || 'walk-in',
+          source: formData.source || 'Walk-in',
           priority: formData.priority || 'medium',
           requirements: formData.requirements?.trim() || '',
           dealStatus: formData.dealStatus || 'in_progress',
@@ -182,13 +182,13 @@ const PartyForm = () => {
 
   const getSourceIcon = (source) => {
     const icons = {
-      instagram: '📷',
-      linkedin: '💼',
-      whatsapp: '📱',
-      'walk-in': '🚶',
-      referral: '👥',
-      website: '🌐',
-      other: '📌'
+      Instagram: '📷',
+      Linkedin: '💼',
+      Whatsapp: '📱',
+      'Walk-in': '🚶',
+      Referral: '👥',
+      Website: '🌐',
+      Other: '📌'
     };
     return icons[source] || '📌';
   };

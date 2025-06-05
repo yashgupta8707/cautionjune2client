@@ -296,13 +296,13 @@ const PartyDetail = () => {
 
   const getSourceIcon = (source) => {
     const icons = {
-      instagram: '📷',
-      linkedin: '💼',
-      whatsapp: '📱',
-      'walk-in': '🚶',
-      referral: '👥',
-      website: '🌐',
-      other: '📌'
+      Instagram: '📷',
+      Linkedin: '💼',
+      Whatsapp: '📱',
+      'Walk-in': '🚶',
+      Referral: '👥',
+      Website: '🌐',
+      Other: '📌'
     };
     return icons[source] || '📌';
   };
@@ -347,7 +347,7 @@ const PartyDetail = () => {
     return (
       <Container className="mt-4">
         {/* Debug Information - Remove this in production */}
-        {debugInfo && (
+        {/* {debugInfo && (
           <Alert variant="warning" className="mb-4">
             <h6>🔧 Debug Information (Remove in production)</h6>
             <div style={{fontSize: '0.85em'}}>
@@ -367,7 +367,7 @@ const PartyDetail = () => {
               </details>
             </div>
           </Alert>
-        )}
+        )} */}
         
         <Card className="text-center p-4">
           <Card.Body>
@@ -494,7 +494,7 @@ const PartyDetail = () => {
                     </Col>
                     <Col md={6}>
                       <p><strong>Address:</strong> {party.address || '-'}</p>
-                      <p><strong>Source:</strong> {getSourceIcon(party.source)} {(party.source || 'walk-in').replace('_', ' ')}</p>
+                      <p><strong>Source:</strong> {getSourceIcon(party.source)} {(party.source || 'Walk-in').replace('_', ' ')}</p>
                       <p><strong>Priority:</strong> {getPriorityBadge(party.priority)}</p>
                       <p><strong>Deal Status:</strong> {getDealStatusBadge(party.dealStatus)}</p>
                     </Col>

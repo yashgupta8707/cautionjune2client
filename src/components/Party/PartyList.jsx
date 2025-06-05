@@ -1,4 +1,4 @@
-// client/src/components/Party/PartyList.js - Debug version to identify the issue
+// client/src/components/Party/PartyList.js - Updated with prominent Create Quotation button
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { partyService } from '../../services/api';
@@ -297,13 +297,13 @@ const PartyList = () => {
 
   const getSourceIcon = (source) => {
     const icons = {
-      instagram: '📷',
-      linkedin: '💼',
-      whatsapp: '📱',
-      'walk-in': '🚶',
-      referral: '👥',
-      website: '🌐',
-      other: '📌'
+      Instagram: '📷',
+      Linkedin: '💼',
+      Whatsapp: '📱',
+      'Walk-in': '🚶',
+      Referral: '👥',
+      Website: '🌐',
+      Other: '📌'
     };
     return icons[source] || '📌';
   };
@@ -326,7 +326,7 @@ const PartyList = () => {
   return (
     <Container fluid className="mt-4">
       {/* Debug Information - Remove this in production */}
-      {debugInfo && (
+      {/* {debugInfo && (
         <Alert variant="info" className="mb-4">
           <h6>🔧 Debug Information (Remove in production)</h6>
           <div style={{fontSize: '0.85em'}}>
@@ -349,7 +349,7 @@ const PartyList = () => {
             </details>
           </div>
         </Alert>
-      )}
+      )} */}
 
       {/* Error Alert */}
       {error && (
@@ -485,13 +485,13 @@ const PartyList = () => {
                 onChange={(e) => handleFilterChange('source', e.target.value)}
               >
                 <option value="">All Sources</option>
-                <option value="instagram">📷 Instagram</option>
-                <option value="linkedin">💼 LinkedIn</option>
-                <option value="whatsapp">📱 WhatsApp</option>
-                <option value="walk-in">🚶 Walk-in</option>
-                <option value="referral">👥 Referral</option>
-                <option value="website">🌐 Website</option>
-                <option value="other">📌 Other</option>
+                <option value="Instagram">📷 Instagram</option>
+                <option value="Linkedin">💼 LinkedIn</option>
+                <option value="Whatsapp">📱 WhatsApp</option>
+                <option value="Walk-in">🚶 Walk-in</option>
+                <option value="Referral">👥 Referral</option>
+                <option value="Website">🌐 Website</option>
+                <option value="Other">📌 Other</option>
               </Form.Select>
             </Col>
 
@@ -619,8 +619,8 @@ const PartyList = () => {
                       </div>
                     </td>
                     <td>
-                      <span title={party.source || 'walk-in'}>
-                        {getSourceIcon(party.source)} {(party.source || 'walk-in').replace('_', ' ')}
+                      <span title={party.source || 'Walk-in'}>
+                        {getSourceIcon(party.source)} {(party.source || 'Walk-in').replace('_', ' ')}
                       </span>
                     </td>
                     <td>
@@ -680,50 +680,64 @@ const PartyList = () => {
                       )}
                     </td>
                     <td>
-                      <Dropdown as={ButtonGroup}>
-                        <Link to={`/parties/${party._id || party.id}`}>
-                          <Button variant="info" size="sm">View</Button>
+                      <div className="d-flex gap-1 flex-wrap">
+                        {/* Primary Actions - More prominent */}
+                        <Link to={`/quotations/add/${party._id || party.id}`}>
+                          <Button variant="success" size="sm" title="Create Quotation">
+                            📄 Quote
+                          </Button>
                         </Link>
                         
-                        <Dropdown.Toggle 
-                          split 
-                          variant="info" 
-                          size="sm"
-                          id={`dropdown-split-${party._id || party.id}`}
-                        />
+                        <Link to={`/parties/${party._id || party.id}`}>
+                          <Button variant="info" size="sm" title="View Details">
+                            👁️ View
+                          </Button>
+                        </Link>
 
-                        <Dropdown.Menu>
-                          <Dropdown.Item
-                            as={Link}
-                            to={`/parties/edit/${party._id || party.id}`}
+                        {/* Secondary Actions Dropdown */}
+                        <Dropdown>
+                          <Dropdown.Toggle 
+                            variant="outline-secondary" 
+                            size="sm"
+                            id={`dropdown-${party._id || party.id}`}
                           >
-                            ✏️ Edit Client
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => {
-                              setSelectedParty(party);
-                              setShowCommentModal(true);
-                            }}
-                          >
-                            💬 Add Note
-                          </Dropdown.Item>
-                          <Dropdown.Item
-                            onClick={() => {
-                              setSelectedParty(party);
-                              setShowFollowUpModal(true);
-                            }}
-                          >
-                            📅 Schedule Follow-up
-                          </Dropdown.Item>
-                          <Dropdown.Divider />
-                          <Dropdown.Item
-                            as={Link}
-                            to={`/quotations/add/${party._id || party.id}`}
-                          >
-                            📄 New Quotation
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
+                            ⋮
+                          </Dropdown.Toggle>
+
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              as={Link}
+                              to={`/parties/edit/${party._id || party.id}`}
+                            >
+                              ✏️ Edit Client
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setSelectedParty(party);
+                                setShowCommentModal(true);
+                              }}
+                            >
+                              💬 Add Note
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => {
+                                setSelectedParty(party);
+                                setShowFollowUpModal(true);
+                              }}
+                            >
+                              📅 Schedule Follow-up
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              as={Link}
+                              to={`/quotations/add/${party._id || party.id}`}
+                              className="text-success"
+                            >
+                              📄 Create Quotation
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -765,25 +779,6 @@ const PartyList = () => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCommentModal(false)}>
-            Cancel
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleAddComment}
-            disabled={modalLoading}
-          >
-            {modalLoading ? (
-              <>
-                <Spinner size="sm" animation="border" className="me-2" />
-                Adding...
-              </>
-            ) : (
-              'Add Note'
-            )}
-          </Button>
-        </Modal.Footer> 
-         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowFollowUpModal(false)}>
             Cancel
           </Button>
@@ -837,6 +832,25 @@ const PartyList = () => {
             </div>
           )}
         </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCommentModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleAddComment}
+            disabled={modalLoading}
+          >
+            {modalLoading ? (
+              <>
+                <Spinner size="sm" animation="border" className="me-2" />
+                Adding...
+              </>
+            ) : (
+              'Add Note'
+            )}
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );
